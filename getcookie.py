@@ -16,10 +16,6 @@ class GetCookieWindow(QWebView):
     #self.setMinimumSize(450,580)
     self.resize(410,520)
     self.setWindowTitle("Login")
-    self.load(QUrl("https://secure.bilibili.com/login"))
-
-    self.show()
-
     self.cookiejar = QNetworkCookieJar()
     self.page().networkAccessManager().setCookieJar(self.cookiejar)
     QObject.connect(self, SIGNAL("loadFinished(bool)"), self.onLoad)
@@ -27,9 +23,10 @@ class GetCookieWindow(QWebView):
     defaultSettings.setAttribute(QWebSettings.JavascriptEnabled, True)
     defaultSettings.setAttribute(QWebSettings.LocalContentCanAccessRemoteUrls, True)
     self.firstload = True
-    self.cookieStatus = 0x00
+    self.cookieStatus = [False, False, False]
     self.cookieList = []
-
+    self.load(QUrl("https://secure.bilibili.com/login"))
+    self.show()
     
   def onLoad(self, _bool):
     
@@ -38,15 +35,15 @@ class GetCookieWindow(QWebView):
       cookiestr = str(cookie.toRawForm(), "utf-8")
       if cookiestr.find("DedeUserID=") == 0:
         self.cookieList.append(cookiestr.split("; ")[0])
-        self.cookieStatus |= 0x01
+        self.cookieStatus[0] = True
       if cookiestr.find("DedeUserID__ckMd5=") == 0:
         self.cookieList.append(cookiestr.split("; ")[0])
-        self.cookieStatus |= 0x02
+        self.cookieStatus[1] = True
       if cookiestr.find("SESSDATA=") == 0:
         self.cookieList.append(cookiestr.split("; ")[0])
-        self.cookieStatus |= 0x04
+        self.cookieStatus[2] = True
       
-    if self.cookieStatus & 0x07 == 0x07:
+    if self.cookieStatus == [True, True, True]:
       print(";".join(self.cookieList))
       self.page().mainFrame().evaluateJavaScript("""
         setTimeout(function(){
@@ -55,7 +52,7 @@ class GetCookieWindow(QWebView):
       """)
     self.page().mainFrame().addToJavaScriptWindowObject("dQtConnect", self)
 
-    if self.firstload == True:
+    if self.firstload is True:
       self.firstload = False
       self.page().mainFrame().scroll(40,240)
 
