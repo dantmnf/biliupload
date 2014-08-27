@@ -21,9 +21,9 @@ module BiliUpload
       end
 
       begin
-        cookies = open("bilicookies","r") {|f|f.read}
+        cookies = open(File.dirname(__FILE__) + "/bilicookies","r") {|f|f.read}
       rescue Errno::ENOENT
-        cookies = ""
+        cookies = "NO_COOKIE_ERROR"
       end
       http = Net::HTTP.new("member.bilibili.com")
       response = http.get('/get_upload_url', {"Cookie" => cookies})
